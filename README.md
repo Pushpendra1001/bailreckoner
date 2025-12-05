@@ -11,14 +11,26 @@
 
 ## 📱 Download APK
 
-**[Download Bail Reckoner APK (50MB)](build/app/outputs/flutter-apk/app-release.apk)**
+### Option 1: Download from GitHub Releases (Recommended)
+1. Go to [Releases](https://github.com/Pushpendra1001/bailreckoner/releases)
+2. Download the latest `app-release.apk` file (50MB)
+
+### Option 2: Clone and Build
+```bash
+git clone https://github.com/Pushpendra1001/bailreckoner.git
+cd bailreckoner
+```
+The pre-built APK is available at: `build/app/outputs/flutter-apk/app-release.apk`
 
 ### Installation Instructions:
-1. Download the APK file from the link above
-2. Enable "Install from Unknown Sources" in your Android settings
-3. Open the downloaded APK file and install
-4. Grant necessary permissions when prompted
-5. Launch the app and select your role (Prisoner/Lawyer/Judge)
+1. Download the APK file using one of the methods above
+2. On your Android device, enable "Install from Unknown Sources" in Settings → Security
+3. Transfer the APK to your device (if downloaded on PC)
+4. Open the APK file and tap "Install"
+5. Grant necessary permissions when prompted (Storage, etc.)
+6. Launch the app and select your role (Prisoner/Lawyer/Judge)
+
+**Note:** If you don't see a release, you can build the APK yourself using the instructions in the Setup section below.
 
 ---
 
