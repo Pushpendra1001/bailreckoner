@@ -49,6 +49,11 @@ class _JudgeDashboardScreenState extends ConsumerState<JudgeDashboardScreen> {
           title: const Text('Judge Dashboard'),
           actions: [
             IconButton(
+              icon: const Icon(Icons.smart_toy),
+              onPressed: () => context.push('/chatbot-judge'),
+              tooltip: 'AI Legal Assistant',
+            ),
+            IconButton(
               icon: const Icon(Icons.notifications),
               onPressed: () => context.push(AppConstants.routeNotifications),
             ),
@@ -161,6 +166,56 @@ class _JudgeDashboardScreenState extends ConsumerState<JudgeDashboardScreen> {
                     ),
                     loading: () => const SizedBox(),
                     error: (_, __) => const SizedBox(),
+                  ),
+                  const SizedBox(height: 24),
+                  // AI Assistant Card
+                  Card(
+                    elevation: 4,
+                    color: Colors.blue.withValues(alpha: 0.1),
+                    child: InkWell(
+                      onTap: () => context.push('/chatbot-judge'),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.blue,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.smart_toy,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'AI Legal Assistant',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Get instant guidance on bail decisions, legal provisions, and case analysis',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, size: 16),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   TextField(

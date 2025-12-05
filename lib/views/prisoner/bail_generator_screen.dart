@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../controllers/ai_controller.dart';
+import '../../controllers/case_controller.dart';
 import '../../widgets/custom_button.dart';
 import '../../services/pdf_service.dart';
+import '../../core/constants.dart';
 import '../../core/utils.dart';
 
 class BailGeneratorScreen extends ConsumerWidget {
@@ -97,22 +100,37 @@ class BailGeneratorScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 32),
                     CustomButton(
-                      text: 'Download PDF',
+                      text: 'View & Share PDF',
                       onPressed: () async {
                         if (!context.mounted) return;
                         try {
                           Utils.showLoadingDialog(context);
                           final pdfService = PDFService();
-                          final file = await pdfService
-                              .generateBailApplicationPDF(application);
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                            await pdfService.sharePDF(file);
+
+                          try {
+                            // Try file-based approach first
+                            final file = await pdfService
+                                .generateBailApplicationPDF(application);
                             if (context.mounted) {
-                              Utils.showSnackBar(
-                                context,
-                                'PDF generated successfully',
-                              );
+                              Navigator.pop(context);
+                              await pdfService.sharePDF(file);
+                              if (context.mounted) {
+                                Utils.showSnackBar(
+                                  context,
+                                  'PDF generated successfully!',
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            // Fallback: Direct share without file
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              Utils.showLoadingDialog(context);
+                            }
+                            await pdfService.generateAndSharePDF(application);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              Utils.showSnackBar(context, 'PDF ready!');
                             }
                           }
                         } catch (e) {
@@ -120,36 +138,79 @@ class BailGeneratorScreen extends ConsumerWidget {
                             Navigator.pop(context);
                             Utils.showSnackBar(
                               context,
-                              'Error generating PDF',
+                              'Error: ${e.toString()}',
                               isError: true,
                             );
                           }
                         }
                       },
-                      icon: Icons.download,
+                      icon: Icons.picture_as_pdf,
                     ),
                     const SizedBox(height: 16),
                     OutlinedButton.icon(
                       onPressed: () async {
                         if (!context.mounted) return;
                         try {
+                          Utils.showLoadingDialog(context);
                           final pdfService = PDFService();
-                          final file = await pdfService
-                              .generateBailApplicationPDF(application);
-                          await pdfService.sharePDF(file);
+
+                          try {
+                            final file = await pdfService
+                                .generateBailApplicationPDF(application);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                              await pdfService.sharePDF(file);
+                              if (context.mounted) {
+                                Utils.showSnackBar(
+                                  context,
+                                  'PDF ready to share!',
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            // Direct share fallback
+                            if (context.mounted) Navigator.pop(context);
+                            await pdfService.generateAndSharePDF(application);
+                            if (context.mounted) {
+                              Utils.showSnackBar(context, 'Shared!');
+                            }
+                          }
                         } catch (e) {
                           if (context.mounted) {
                             Utils.showSnackBar(
                               context,
-                              'Error sharing PDF',
+                              'Error: ${e.toString()}',
                               isError: true,
                             );
                           }
                         }
                       },
                       icon: const Icon(Icons.share),
-                      label: const Text('Share'),
+                      label: const Text('Share PDF'),
                       style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 32,
+                          vertical: 16,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        // Clear the case to prevent duplicate reports
+                        ref.read(currentCaseProvider.notifier).clearCase();
+                        ref.invalidate(bailApplicationProvider);
+                        ref.invalidate(eligibilityPredictionProvider);
+                        ref.invalidate(nlpAnalysisProvider);
+
+                        // Go back to dashboard
+                        context.go(AppConstants.routePrisonerDashboard);
+                      },
+                      icon: const Icon(Icons.home),
+                      label: const Text('Done - Back to Dashboard'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
                           horizontal: 32,
                           vertical: 16,

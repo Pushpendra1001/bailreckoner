@@ -42,6 +42,11 @@ class _LawyerDashboardScreenState extends ConsumerState<LawyerDashboardScreen> {
           title: const Text('Lawyer Dashboard'),
           actions: [
             IconButton(
+              icon: const Icon(Icons.smart_toy),
+              onPressed: () => context.push('/chatbot-lawyer'),
+              tooltip: 'AI Legal Assistant',
+            ),
+            IconButton(
               icon: const Icon(Icons.notifications),
               onPressed: () => context.push(AppConstants.routeNotifications),
             ),
@@ -151,6 +156,56 @@ class _LawyerDashboardScreenState extends ConsumerState<LawyerDashboardScreen> {
                     ),
                     loading: () => const SizedBox(),
                     error: (_, __) => const SizedBox(),
+                  ),
+                  const SizedBox(height: 24),
+                  // AI Assistant Card
+                  Card(
+                    elevation: 4,
+                    color: Colors.green.withValues(alpha: 0.1),
+                    child: InkWell(
+                      onTap: () => context.push('/chatbot-lawyer'),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: Colors.green,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Icon(
+                                Icons.smart_toy,
+                                color: Colors.white,
+                                size: 32,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'AI Legal Assistant',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleMedium
+                                        ?.copyWith(fontWeight: FontWeight.bold),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  const Text(
+                                    'Understand case complexity, legal strategies, and strengthen bail applications',
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Icon(Icons.arrow_forward_ios, size: 16),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
                   Text(

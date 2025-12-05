@@ -6,6 +6,7 @@ import '../views/common/notifications_screen.dart';
 import '../views/common/case_list_screen.dart';
 import '../views/common/search_case_screen.dart';
 import '../views/common/documents_screen.dart';
+import '../views/common/chatbot_screen.dart';
 import '../views/prisoner/prisoner_login_screen.dart';
 import '../views/prisoner/prisoner_dashboard_screen.dart';
 import '../views/prisoner/case_input_screen.dart';
@@ -88,6 +89,20 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: '/documents',
       builder: (context, state) => const DocumentsScreen(),
+    ),
+    GoRoute(
+      path: '/chatbot-judge',
+      builder: (context, state) => const ChatbotScreen(
+        userRole: 'judge',
+        title: 'AI Legal Assistant - Judge',
+      ),
+    ),
+    GoRoute(
+      path: '/chatbot-lawyer',
+      builder: (context, state) => const ChatbotScreen(
+        userRole: 'lawyer',
+        title: 'AI Legal Assistant - Lawyer',
+      ),
     ),
   ],
 );

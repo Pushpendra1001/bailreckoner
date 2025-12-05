@@ -6,6 +6,7 @@ import '../../widgets/custom_textfield.dart';
 import '../../widgets/custom_button.dart';
 import '../../models/case_model.dart';
 import '../../services/case_service.dart';
+import '../../services/ai_service.dart';
 import '../../controllers/case_controller.dart';
 import '../../controllers/ai_controller.dart';
 
@@ -26,6 +27,9 @@ class _CaseInputScreenState extends ConsumerState<CaseInputScreen> {
   String _selectedCrimeCategory = AppConstants.crimeCategories[0];
   final List<String> _selectedSections = [];
   bool _isAnalyzing = false;
+  bool _isAutoDetecting = false;
+  String _detectedCategory = '';
+  List<String> _suggestedSections = [];
 
   @override
   void dispose() {
@@ -34,6 +38,67 @@ class _CaseInputScreenState extends ConsumerState<CaseInputScreen> {
     _previousConvictionsController.dispose();
     _daysInCustodyController.dispose();
     super.dispose();
+  }
+
+  Future<void> _autoDetectIPCSections() async {
+    final description = _descriptionController.text.trim();
+    if (description.length < 20) return;
+
+    setState(() => _isAutoDetecting = true);
+
+    try {
+      final aiService = AIService();
+      final analysis = await aiService.analyzeCaseNLP(description);
+
+      setState(() {
+        _suggestedSections = analysis.extractedSections;
+        _detectedCategory = analysis.crimeCategory;
+
+        // Auto-select suggested sections
+        _selectedSections.clear();
+        for (final section in analysis.extractedSections) {
+          // Map detected sections to available IPC sections
+          if (section.contains('379'))
+            _selectedSections.add('Section 379 - Theft');
+          if (section.contains('420'))
+            _selectedSections.add('Section 420 - Cheating');
+          if (section.contains('302'))
+            _selectedSections.add('Section 302 - Murder');
+          if (section.contains('323'))
+            _selectedSections.add('Section 323 - Assault');
+          if (section.contains('392'))
+            _selectedSections.add('Section 392 - Robbery');
+          if (section.contains('376'))
+            _selectedSections.add('Section 376 - Rape');
+          if (section.contains('363'))
+            _selectedSections.add('Section 363 - Kidnapping');
+          if (section.contains('465') || section.contains('463'))
+            _selectedSections.add('Section 465 - Forgery');
+        }
+
+        // Update crime category if detected
+        if (_detectedCategory.isNotEmpty &&
+            AppConstants.crimeCategories.contains(_detectedCategory)) {
+          _selectedCrimeCategory = _detectedCategory;
+        }
+      });
+
+      if (mounted && _suggestedSections.isNotEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('✓ Auto-detected: ${_suggestedSections.join(', ')}'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      // Silent fail - user can manually select
+    } finally {
+      if (mounted) {
+        setState(() => _isAutoDetecting = false);
+      }
+    }
   }
 
   Future<void> _analyzeCase() async {
@@ -126,16 +191,72 @@ class _CaseInputScreenState extends ConsumerState<CaseInputScreen> {
                       const SizedBox(height: 16),
                       CustomTextField(
                         label: 'Case Description',
-                        hint: 'Describe the case in detail',
+                        hint:
+                            'Describe the case in detail (theft, assault, fraud, etc.)',
                         controller: _descriptionController,
                         maxLines: 5,
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter case description';
                           }
+                          if (value.length < 20) {
+                            return 'Please provide more details (at least 20 characters)';
+                          }
                           return null;
                         },
                       ),
+                      const SizedBox(height: 12),
+                      ElevatedButton.icon(
+                        onPressed: _isAutoDetecting
+                            ? null
+                            : _autoDetectIPCSections,
+                        icon: _isAutoDetecting
+                            ? const SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Icon(Icons.auto_fix_high),
+                        label: Text(
+                          _isAutoDetecting
+                              ? 'Detecting...'
+                              : 'Auto-Detect IPC Sections',
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                      if (_suggestedSections.isNotEmpty) ...[
+                        const SizedBox(height: 8),
+                        Card(
+                          color: Colors.green.withValues(alpha: 0.1),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.check_circle,
+                                  color: Colors.green,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Detected: ${_suggestedSections.join(', ')}',
+                                    style: const TextStyle(
+                                      color: Colors.green,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: 16),
                       DropdownButtonFormField<String>(
                         initialValue: _selectedCrimeCategory,
